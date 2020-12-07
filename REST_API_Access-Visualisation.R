@@ -20,7 +20,7 @@ github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
 
 # Use API
 gtoken <- config(token = github_token)
-req <- GET("https://api.github.com/users/CSSEGISandData/repos", gtoken)
+req <- GET("https://api.github.com/repos/CSSEGISandData/COVID-19/forks", gtoken)
 
 # Take action on http error
 stop_for_status(req)
@@ -32,8 +32,9 @@ json1 = content(req)
 gitDF = jsonlite::fromJSON(jsonlite::toJSON(json1))
 
 # Subset data.frame
+gitDF
 gitDF[gitDF$full_name == "CSSEGISandData/datasharing"] 
-gitDF[20]
+str(gitDF$commits)
 
 
 ##CERN
@@ -41,8 +42,9 @@ req2 <- GET("https://api.github.com/users/CERN/repos", gtoken)
 json1 = content(req2)
 gitDFCERN = jsonlite::fromJSON(jsonlite::toJSON(json1))
 gitDFCERN[gitDFCERN$full_name == "CERN/datasharing"] 
+str(gitDFCERN)
 gitDFCERN[7]
-
+?GET
 
 ##sindresorhus
 req3 <- GET("https://api.github.com/users/sindresorhus/repos", gtoken)
