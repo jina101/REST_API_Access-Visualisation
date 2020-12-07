@@ -5,6 +5,8 @@ library(httpuv)
 install.packages("httr")
 library(httr)
 
+usethis::edit_r_environ()
+
 
 oauth_endpoints("github")
 
@@ -18,7 +20,7 @@ github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
 
 # Use API
 gtoken <- config(token = github_token)
-req <- GET("https://api.github.com/users/jina101/repos", gtoken)
+req <- GET("https://api.github.com/users/CSSEGISandData/repos", gtoken)
 
 # Take action on http error
 stop_for_status(req)
@@ -30,5 +32,21 @@ json1 = content(req)
 gitDF = jsonlite::fromJSON(jsonlite::toJSON(json1))
 
 # Subset data.frame
-gitDF[gitDF$full_name == "jina101/datasharing"] 
+gitDF[gitDF$full_name == "CSSEGISandData/datasharing"] 
+gitDF[20]
 
+
+##CERN
+req2 <- GET("https://api.github.com/users/CERN/repos", gtoken)
+json1 = content(req2)
+gitDFCERN = jsonlite::fromJSON(jsonlite::toJSON(json1))
+gitDFCERN[gitDFCERN$full_name == "CERN/datasharing"] 
+gitDFCERN[7]
+
+
+##sindresorhus
+req3 <- GET("https://api.github.com/users/sindresorhus/repos", gtoken)
+json1 = content(req3)
+gitDFsindresorhus = jsonlite::fromJSON(jsonlite::toJSON(json1))
+gitDFsindresorhus[gitDFsindresorhus$full_name == "sindresorhus/datasharing"] 
+gitDFsindresorhus[7]
