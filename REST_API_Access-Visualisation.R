@@ -127,16 +127,120 @@ for(i in 1:total_orgs )
 }
 
 
-org.data.DF
+#write.csv(org.data.DF, 'orgdata.csv')
   
-#TODO: Create separate function to get total public members and total languages
-#Append them to the previous dataframe and then also remove null/incorrect values for location
+## Get Total Public Members for Each Org:
+
+public_members = c()
+
+for(i in 1:nrow(org.data.DF))
+{
+  public_members_url = paste("https://api.github.com/orgs/", org.data.DF[i,1], "/public_members", sep = "")
+  pubmem = GET(public_members_url, gtoken)
+  pubmem_cont = content(pubmem)
+  pubmem.DF = jsonlite::fromJSON(jsonlite::toJSON(pubmem_cont))
+  
+  total <- 0
+  amount <- nrow(pubmem.DF)
+  
+  #Get total public employees
+  if(is.null(amount))
+  {
+    total = 0
+  }
+  else
+  {
+    total = nrow(pubmem.DF)
+  }
+  
+  #Add to public_members
+  public_members[length(public_members) + 1] = total
+  
+}
+#write.csv(public_members, 'public_members.csv')
+
+## Get total languages used in each repo for each org
+
+# function to get the total unique languages:
+
+total_lang<- function(name, total_repos)
+{
+  languages = c()
+  for(j in 1: length(total_repos))
+  {
+    repos_url2 = paste("https://api.github.com/repos/", name,"/", total_repos[j], sep = "")
+    repo2 = GET(repos_url2, gtoken)
+    repo_cont2 = content(repo2)
+    repo.DF2 = jsonlite::fromJSON(jsonlite::toJSON(repo_cont2))
+    
+    language <- repo.DF2$language
+    if (length(language) != 0 && language != "<NA>")
+    {
+      # add language to list
+      languages[length(languages)+1] = language
+    }
+    next
+  }
+  
+  total <- length(unique(languages))
+  return(total)
+  
+}  
+
+
+total_languages = c()
+
+for(i in 1:nrow(org.data.DF))
+{
+  repos_url = paste("https://api.github.com/users/", org.data.DF[i,1], "/repos?per_page=100", sep = "")
+  repo = GET(repos_url, gtoken)
+  repo_cont = content(repo)
+  repo.DF = jsonlite::fromJSON(jsonlite::toJSON(repo_cont))
+  
+  total_repos = repo.DF$name
+  name = org.data.DF[i,1]
+  total <- total_lang(name, total_repos)
+  total_languages[length(total_languages)+1] = total
+}
+
+#Append them to the previous dataframe and update invalid location figures
 # get public members
+
+org.data.DF <- cbind(org.data.DF, total_languages, public_members)
 
 org3 = GET("https://api.github.com/organizations/", org_user_list[i], sep = "", gtoken)
 org_cont2 = content(org3)
 org.DF2 <- jsonlite::fromJSON(jsonlite::toJSON(org_cont2))
 public_members <- org.DF2$public_members
+
+#
+for(i in 1: nrow(org.data.DF))
+{
+  if(org.data.DF[i,1] == org.data.DF[i,3])
+  {
+    org.data.DF[i,3] = "No Location"
+  }
+}
+
+
+
+#Visualise the Data:
+plot(org.data.DF$Repos, org.data.DF$total_languages, main ="Number of Repos Vs Number of Languages", xlab="Repositories", ylab="Languages")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -148,8 +252,4 @@ repos <- c("CSSEGISandData/COVID-19", "kubernetes/kubernetes", "Microsoft/vscode
            "")
 
 # Visualisation 1: Location of everyone who forked John Hopkin's Covid Data
-
-
-
-
 
