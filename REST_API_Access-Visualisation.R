@@ -1,5 +1,7 @@
 library(ggplot2)
 library(dbplyr)
+library(viridis)
+library(hrbrthemes)
 #install.packages("jsonlite")
 library(jsonlite)
 #install.packages("httpuv")
@@ -248,15 +250,14 @@ org.data.DF <- cbind(org.data.DF, continent)
 
 #newdata %>%
 #mutate(country = factor(Location, Location)) %>%
-  
+
 ggplot(newdata, aes(x=Repos, y=total_languages, size = public_members, color=continent)) + 
-  geom_point(alpha=0.5) +
-  scale_size(range = c(.1, 14), name="Public Members")
-  
-plot(org.data.DF$Repos, org.data.DF$total_languages, main ="Number of Repos Vs Number of Languages", xlab="Repositories", ylab="Languages")
-
-
-
+  geom_point(alpha=0.3) +
+  scale_size(range = c(.1, 15), name="Public Members")+
+  theme_bw() +
+  theme(legend.position="right") +
+  ylab("Total Languages") +
+  xlab("Total Public Repositories")
 
 
 
