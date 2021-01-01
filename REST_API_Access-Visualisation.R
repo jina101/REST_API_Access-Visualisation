@@ -1,4 +1,5 @@
 library(ggplot2)
+library(dbplyr)
 #install.packages("jsonlite")
 library(jsonlite)
 #install.packages("httpuv")
@@ -225,17 +226,34 @@ for(i in 1: nrow(org.data.DF))
 
 
 #Visualise the Data:
+# Add Continents
+org.data.DF[,2] <- sapply(org.data.DF[,2], as.numeric)
+org.data.DF[,3] <- sapply(org.data.DF[,3], as.character)
+newdata <- org.data.DF[order(org.data.DF[,2]),]
+
+continent=c("Unknown", "North America", "North America", "North America","North America","North America","North America", "Unknown","Europe","North America","North America", "Unknown","North America", "Europe","North America", "Europe","North America","North America", "Europe","North America", "Europe","North America","North America","Europe","North America","Europe","North America", "South America","Unknown","North America","North America", "Europe", "Europe","North America","Unknown","Europe","North America","North America","North America","North America","Europe","Unknown","North America","North America", "Europe","North America","Oceania","North America","Europe","Unknown","North America","North America","Unknown","North America","South America","Europe","North America","North America","Europe","Europe","North America","Europe","Unknown","North America","North America","North America", "Africa","North America","Europe","North America","North America","Unknown","Unknown","Unknown","North America","North America", "Unknown","Europe","Europe","North America","North America","North America","North America","North America", "Asia","Oceania","North America","North America","Europe","Europe","North America","North America","North America","North America","Europe","Unknown","Unknown","Unknown","North America","Unknown")
+continent[c(71,72,73,74,77,78,79,82,83,85,86)] = c("Europe","North America", "North America","North America","North America","Asia","Oceania","Europe","Europe","Unkown","Europe")
+
+for(i in 1:100)
+{
+  if(continent[i]=="Unkown")
+  {
+    continent[i]="Unknown"
+  }
+}
+
+write.csv(continent,"continent.csv")
+
+org.data.DF <- cbind(org.data.DF, continent)
+
+#newdata %>%
+#mutate(country = factor(Location, Location)) %>%
+  
+ggplot(newdata, aes(x=Repos, y=total_languages, size = public_members, color=continent)) + 
+  geom_point(alpha=0.5) +
+  scale_size(range = c(.1, 14), name="Public Members")
+  
 plot(org.data.DF$Repos, org.data.DF$total_languages, main ="Number of Repos Vs Number of Languages", xlab="Repositories", ylab="Languages")
-
-
-
-
-
-
-
-
-
-
 
 
 
