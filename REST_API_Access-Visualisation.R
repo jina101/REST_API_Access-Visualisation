@@ -310,7 +310,7 @@ for(i in 1:length(repo_names))
   commits = paste(url, "/commits", sep="")
   language = paste(url,"/languages",sep="")
   
-  languages <- repo.DF$language
+  languages <- rep.DF$language
   if (length(languages) != 0 && languages != "<NA>")
   {
     # add language to list
@@ -324,6 +324,37 @@ for(i in 1:length(repo_names))
 }
 
 write.csv(repos.data.DF, "repos_data.csv")
+
+
+# Fetch Commit Data for each repo
+repo.commit.DF <- data.frame(
+  
+  RepoID = integer(),
+  CommitDate = integer(),
+  CommitTime = integer(),
+  CommitSha = integer()
+  
+)
+
+com_url <- paste("https://api.github.com/repos/jina101/", repo_names[5],"/commits", sep="" )
+com_info <- GET(com_url, gtoken)
+com_content <- content(com_info)
+commits.DF <- jsonlite::fromJSON(jsonlite::toJSON(com_content))
+
+while(count==17)
+{
+  page = 2
+  count=0
+  prev_length = nrow(commits.DF)
+  
+  com_url <- paste("https://api.github.com/repos/jina101/", repo_names[5],"/commits", sep="" )
+  com_info <- GET(com_url, gtoken)
+  com_content <- content(com_info)
+  commits.DF <- jsonlite::fromJSON(jsonlite::toJSON(com_content))
+  
+  
+}
+
 # Animated plot of total repos, total languages and total commits over a few months
 
 
