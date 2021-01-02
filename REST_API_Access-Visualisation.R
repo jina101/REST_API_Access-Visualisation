@@ -1,4 +1,5 @@
 library(ggplot2)
+library(plotly)
 library(dbplyr)
 library(viridis)
 library(hrbrthemes)
@@ -248,16 +249,83 @@ write.csv(continent,"continent.csv")
 
 org.data.DF <- cbind(org.data.DF, continent)
 
+write.csv(org.data.DF, "fulldata.csv")
+
 #newdata %>%
 #mutate(country = factor(Location, Location)) %>%
 
-ggplot(newdata, aes(x=Repos, y=total_languages, size = public_members, color=continent)) + 
+p <- ggplot(newdata, aes(x=Repos, y=total_languages, size = public_members, color=continent)) + 
   geom_point(alpha=0.3) +
   scale_size(range = c(.1, 15), name="Public Members")+
   theme_bw() +
   theme(legend.position="right") +
   ylab("Total Languages") +
   xlab("Total Public Repositories")
+
+ggplotly(p)
+
+############################ Try Some Hierarchical Clustering with the Data ##############
+
+
+##########################################################################################
+###                     Visualisation of My Personal Repositories                      ###
+##########################################################################################
+# Extract data
+jina101 <- GET("https://api.github.com/users/jina101", gtoken)
+jina_content = content(jina101)
+jina.DF = jsonlite::fromJSON(jsonlite::toJSON(jina_content))
+
+repos.data.DF <- data.frame(
+  
+  ID = integer(),
+  Name = integer(),
+  Created = integer(),
+  Updated = integer(),
+  Commits_URL = integer(),
+  Language_URL = integer(),
+  Total_Languages = integer(),
+  Repo_URL = integer()
+  
+)
+
+## Fetch Repository Data:
+jina_repos <- GET(jina.DF$repos_url, gtoken)
+jinarep <- content(jina_repos)
+jinarepo.DF <- jsonlite::fromJSON(jsonlite::toJSON(jinarep))
+
+repo_names <- jinarepo.DF$name
+for(i in 1:length(repo_names))
+{
+ 
+  lang = c()
+  url <- paste("https://api.github.com/repos/jina101/", repo_names[i], sep="" )
+  rep_info <- GET(url, gtoken)
+  rep_content <- content(rep_info)
+  rep.DF <- jsonlite::fromJSON(jsonlite::toJSON(rep_content))
+
+  id <- rep.DF$id
+  name <- rep.DF$name
+  created = substr(rep.DF$created_at, start=1, stop=10)
+  updated = substr(rep.DF$updated_at, start=1, stop=10)
+  commits = paste(url, "/commits", sep="")
+  language = paste(url,"/languages",sep="")
+  
+  languages <- repo.DF$language
+  if (length(languages) != 0 && languages != "<NA>")
+  {
+    # add language to list
+    lang[length(lang)+1] = languages
+  }
+  total_lang <- length(unique(lang))
+    
+  rep_url = url
+    
+  repos.data.DF[nrow(repos.data.DF)+1, ]=c(id, name, created, updated, commits, language, total_lang, rep_url)
+}
+
+write.csv(repos.data.DF, "repos_data.csv")
+# Animated plot of total repos, total languages and total commits over a few months
+
 
 
 
