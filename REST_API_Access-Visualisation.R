@@ -330,38 +330,48 @@ write.csv(repos.data.DF, "repos_data.csv")
 repo.commit.DF <- data.frame(
   
   RepoID = integer(),
+  CommitSha = integer(),
   CommitDate = integer(),
-  CommitTime = integer(),
-  CommitSha = integer()
+  CommitTime = integer()
+  
   
 )
 
-com_url <- paste("https://api.github.com/repos/jina101/", repo_names[5],"/commits", sep="" )
-com_info <- GET(com_url, gtoken)
-com_content <- content(com_info)
-commits.DF <- jsonlite::fromJSON(jsonlite::toJSON(com_content))
-
-while(count==17)
+for(i in 1:length(repo_names))
 {
-  page = 2
-  count=0
-  prev_length = nrow(commits.DF)
-  
-  com_url <- paste("https://api.github.com/repos/jina101/", repo_names[5],"/commits", sep="" )
+  com_url <- paste("https://api.github.com/repos/jina101/", repo_names[i],"/commits?per_page=100", sep="" )
   com_info <- GET(com_url, gtoken)
   com_content <- content(com_info)
   commits.DF <- jsonlite::fromJSON(jsonlite::toJSON(com_content))
   
+
+  for(j in 1:nrow(commits.DF))
+  {
+    id = repos.data.DF[i,1]
+    currentCommit = commits.DF[j,]
+    commit_sha = currentCommit$sha
+    commit_date = substr(currentCommit$commit[,1]$date, start=1, stop=10)
+    commit_time = substr(currentCommit$commit[,1]$date, start=12, stop=19)
+    
+    repo.commit.DF[nrow( repo.commit.DF)+1, ]=c(id, commit_sha, commit_date, commit_time)
+  }
+  
+  #write.csv(repo.commit.DF, "repository_commit_data.csv")
   
 }
 
+
+
 # Animated plot of total repos, total languages and total commits over a few months
 
+# Commits by Repository
+library("data.table")
+commits.DT <- setDT(repo.commit.DF)
+repo.commit.DF[,1] = sapply(repo.commit.DF[,1], as.numeric)
 
+summarise(commits.DT)
 
-
-
-
+summary(commits.DT)
 # Stars and Forks of CERNS Repos
 
 # Get Stars and Forks of Some Popular Github Repos
@@ -370,4 +380,6 @@ repos <- c("CSSEGISandData/COVID-19", "kubernetes/kubernetes", "Microsoft/vscode
            "")
 
 # Visualisation 1: Location of everyone who forked John Hopkin's Covid Data
+
+
 
