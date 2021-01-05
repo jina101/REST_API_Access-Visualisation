@@ -343,24 +343,3 @@ for(i in 1:length(repo_names))
 
 
 
-# Animated plot of total repos and total commits over a few months
-
-# Commits by Repository
-library("data.table")
-commits.DT <- setDT(repo.commit.DF)
-repo.commit.DF[,1] = sapply(repo.commit.DF[,1], as.numeric)
-
-summarise(commits.DT)
-
-summary(commits.DT)
-# Stars and Forks of CERNS Repos
-
-# Get Stars and Forks of Some Popular Github Repos
-
-repos <- c("CSSEGISandData/COVID-19", "kubernetes/kubernetes", "Microsoft/vscode", "NixOS/nixpkgs", "Automattic/wp-calypso",
-           "")
-
-# Visualisation 1: Location of everyone who forked John Hopkin's Covid Data
-
-
-
