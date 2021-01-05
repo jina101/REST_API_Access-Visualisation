@@ -73,7 +73,7 @@ for(i in 1: nrow(commit.DF))
 commit.DF <- cbind(commit.DF, repo_names)
 
 ####################################################################################
-#Visualisation 1: Animated Bar Plot: Total Commits Per Repo over Oct 2020 - Dec 2020
+#Visualisation 2: Animated Bar Plot: Total Commits Per Repo over Oct 2020 - Dec 2020
 ####################################################################################
 
 head(commit.DF)
@@ -131,7 +131,7 @@ animate(animated_bar)
 anim_save("AnimatedBar-CommitsPerRepoOct2020-Nov2020.gif")
  
 ##################################################################
-# Most Popular Commit Times
+# Visualisation 3: Dygraph: Commits By Date
 ################################################################## 
 
  #Create a DateTime column and convert to POSIXct/POSIXt
@@ -141,32 +141,20 @@ commit.DF$DateTime <- dmy_hms(commit.DF$DateTime)
 # Make sure it's converted to POSIXct/POSIXt
 class(commit.DF$DateTime)
 
-# Group by day
-commit.DF7 <- commit.DF %>%
-  group_by(day(DateTime))
-
-commit.DF8 <- as.data.frame(count(commit.DF7))
-
-#Group by month
-commit.DF10 <- commit.DF %>%
-  group_by(month(DateTime))
-
-commit.DF11 <- as.data.frame(count(commit.DF10))
-
 #Group by date
-commit.DF14 <- commit.DF %>%
+commit.DF_bydate <- commit.DF %>%
   group_by(date(DateTime))
 
-commit.DF15 <- as.data.frame(count(commit.DF14))
-
+commit.DF_bydate.total <- as.data.frame(count(commit.DF14))
 
 ## Create an interactive time series plot
 
 #Create xts
-don <- xts(x = commit.DF15$n, order.by = commit.DF15$`date(DateTime)`)
+don <- xts(x = commit.DF_bydate.total$n, order.by = commit.DF_bydate.total$`date(DateTime)`)
 
+#Create interactive the dygraph
 #Commits by Day
-t <- dygraph(don,  main = "Commits by Day Oct 2020 - Dec 2020", )%>%
+dygraph1 <- dygraph(don,  main = "Commits by Day Oct 2020 - Dec 2020", )%>%
   dyOptions(labelsUTC = TRUE, fillGraph=TRUE, fillAlpha=0.1, drawGrid = FALSE, colors="#D8AE5A") %>%
   dyRangeSelector() %>%
   dyCrosshair(direction = "vertical") %>%
@@ -175,46 +163,46 @@ t <- dygraph(don,  main = "Commits by Day Oct 2020 - Dec 2020", )%>%
 
 # save the widget
 library(htmlwidgets)
-saveWidget(t,"CommitsByDayDygraph.html")
+saveWidget(dygraph1,"CommitsByDateDygraph-Interactive.html")
 
-#Group by time
-commit.DF19$Time <- format(floor_date(commit.DF19$DateTime, "hour"),"%H:%M:%S")
-commit.DF19 <- commit.DF19 %>%
+
+###############################################################################
+# Visualisation 4: Animated Line Chart: Commits by Time (24hr) Grouped by Repo
+############################################################################### 
+#Group by time (hourly)
+commit.DF.hour <- commit.DF
+commit.DF.hour$Time <- format(floor_date(commit.DF.hour$DateTime, "hour"),"%H:%M:%S")
+commit.DF.hour <- commit.DF.hour %>%
   group_by(Time)
 
+#convert time from character to numeric
 group_by_time <- as.data.frame(count(commit.DF19,repo_names, Time))
 group_by_time$Time <- as.numeric(substr(group_by_time$Time, start=1, stop = 2))
 
-class(group_by_time$RepoID)
-
-#Save animated plot
-anim <- group_by_time %>%
+#Create and Save animated plot
+anim_line_plot <- group_by_time %>%
   ggplot( aes(x=Time, y=n, group=as.factor(repo_names), color=repo_names)) +
   geom_line() +
   geom_point() +
   scale_color_viridis(discrete = TRUE) +
-  ggtitle("Commits by Time Per Time (24hr)") +
+  ggtitle("Commits by Time(24hr)") +
   theme_ipsum() +
   ylab("Total Commits") +
   xlab("Time - 24hrs")+
   transition_reveal(Time)
 
-#animate(anim)
-anim_save("CommitsPerTime.gif")
+anim_save("AnimatedLinePlot-CommitsByTime.gif")
 
 
-?count
-commits_by_hour <- count(commit.DF19)
-plot(commits_by_hour)
 
-df %>%
-  group_by(Date=floor_date(Date, "1 hour")) %>%
-  summarize(c1=sum(c1), c2=sum(c2), c3=sum(c3))
 
-commit.DF20 <- as.data.frame(count (floor_date(commit.DF19$DateTime, "hour")))
 
-commit.DF$Hour = commit.DF19$DateTime$hour
 
+
+
+
+
+###################################################
 q <- commit.DF %>% 
   count(week = floor_date(commit.DF$DateTime, "week")) %>% 
   ggplot(aes(week, n)) +
@@ -235,15 +223,4 @@ s <- commit.DF %>%
   geom_line()
 
 ggplotly(s)
-
-# Cut into 60 minute intervals
-count(commit.DF$CommitSha, commit.DF$RepoID, commit.DF$DateTime)
-commit.DF$Interval <- cut(hour(commit.DF$DateTime), c(0, 6, 12, 18, 24), include.lowest = TRUE)
-group.by(commit.DF$Interval)
-plot(commit.DF$CommitTime)
-#commit.DF$interval <- cut(commit.DF$DateTime, breaks = "60 min")  
-#commit.DF <- group_by(commit.DF$interval)
- 
-library(gapminder)
-gapminder 
  

@@ -76,13 +76,14 @@ paste(format(gg_commits$author$login), ":", gg_commits$commit$message)
 ###############################################################################################
 #                          Retrieve Data for Visualisation Purposes               
 ###############################################################################################
-# Visualisation 1: Total Languages vs Total Repos for 100 GitHub Repos
+# Visualisation 1: Get Data for Total Languages vs Total Repos for 100 Github Users/Orgs
 
 # Get GitHub data for 100 Organisations
 organisations <- GET("https://api.github.com/organizations?per_page=100")
 orgs = content(organisations)
 organisations.DF = jsonlite::fromJSON(jsonlite::toJSON(orgs))
 
+#Check data retrieved
 organisations.DF
 dim(organisations.DF)
 
@@ -91,7 +92,6 @@ org_user <- organisations.DF$login
 org_user_list <- c(org_user)
 
 # Data frame to store relevant organisation data
-org.data <- c()
 org.data.DF <- data.frame(
   
   OrgName = integer(),
@@ -132,11 +132,11 @@ for(i in 1:total_orgs )
   
 }
 
-
+#Save csv file
 #write.csv(org.data.DF, 'orgdata.csv')
   
 ## Get Total Public Members for Each Org:
-
+# Vector to store number of public members
 public_members = c()
 
 for(i in 1:nrow(org.data.DF))
@@ -165,7 +165,7 @@ for(i in 1:nrow(org.data.DF))
 }
 #write.csv(public_members, 'public_members.csv')
 
-## Get total languages used in each repo for each org
+##Get total languages used in each repo for each org
 
 # function to get the total unique languages:
 
@@ -174,12 +174,15 @@ total_lang<- function(name, total_repos)
   languages = c()
   for(j in 1: length(total_repos))
   {
+    #Go through all of the organisation's repos
     repos_url2 = paste("https://api.github.com/repos/", name,"/", total_repos[j], sep = "")
     repo2 = GET(repos_url2, gtoken)
     repo_cont2 = content(repo2)
     repo.DF2 = jsonlite::fromJSON(jsonlite::toJSON(repo_cont2))
     
     language <- repo.DF2$language
+    
+    #Don't include repos that have no languages
     if (length(language) != 0 && language != "<NA>")
     {
       # add language to list
@@ -188,14 +191,16 @@ total_lang<- function(name, total_repos)
     next
   }
   
+  #Get the unique number of languages they have
   total <- length(unique(languages))
   return(total)
   
 }  
 
-
+#vector to store total languages
 total_languages = c()
 
+#Go through each org and their repos to get total unique languages
 for(i in 1:nrow(org.data.DF))
 {
   repos_url = paste("https://api.github.com/users/", org.data.DF[i,1], "/repos?per_page=100", sep = "")
@@ -206,14 +211,16 @@ for(i in 1:nrow(org.data.DF))
   total_repos = repo.DF$name
   name = org.data.DF[i,1]
   total <- total_lang(name, total_repos)
+  
+  #store in vector
   total_languages[length(total_languages)+1] = total
 }
 
 #Append them to the previous dataframe and update invalid location figures
-# get public members
 
 org.data.DF <- cbind(org.data.DF, total_languages, public_members)
 
+#Update invalid org locations
 org3 = GET("https://api.github.com/organizations/", org_user_list[i], sep = "", gtoken)
 org_cont2 = content(org3)
 org.DF2 <- jsonlite::fromJSON(jsonlite::toJSON(org_cont2))
@@ -229,40 +236,14 @@ for(i in 1: nrow(org.data.DF))
 }
 
 
-
-#Visualise the Data:
-# Add Continents
-org.data.DF[,2] <- sapply(org.data.DF[,2], as.numeric)
-org.data.DF[,3] <- sapply(org.data.DF[,3], as.character)
-newdata <- org.data.DF[order(org.data.DF[,2]),]
-
-continent=c("Unknown", "North America", "North America", "North America","North America","North America","North America", "Unknown","Europe","North America","North America", "Unknown","North America", "Europe","North America", "Europe","North America","North America", "Europe","North America", "Europe","North America","North America","Europe","North America","Europe","North America", "South America","Unknown","North America","North America", "Europe", "Europe","North America","Unknown","Europe","North America","North America","North America","North America","Europe","Unknown","North America","North America", "Europe","North America","Oceania","North America","Europe","Unknown","North America","North America","Unknown","North America","South America","Europe","North America","North America","Europe","Europe","North America","Europe","Unknown","North America","North America","North America", "Africa","North America","Europe","North America","North America","Unknown","Unknown","Unknown","North America","North America", "Unknown","Europe","Europe","North America","North America","North America","North America","North America", "Asia","Oceania","North America","North America","Europe","Europe","North America","North America","North America","North America","Europe","Unknown","Unknown","Unknown","North America","Unknown")
-continent[c(71,72,73,74,77,78,79,82,83,85,86)] = c("Europe","North America", "North America","North America","North America","Asia","Oceania","Europe","Europe","Unkown","Europe")
-
-for(i in 1:100)
-{
-  if(continent[i]=="Unkown")
-  {
-    continent[i]="Unknown"
-  }
-}
-
-write.csv(continent,"continent.csv")
+# Add the continents to the datat 
+continent <- c("Unknown", "North America", "North America", "North America", "North America", "Unknown", "North America", "North America","North America"," Europe", "North America", "Europe", "North America", "Europe", "South America", "Unknown", "North America", "North America", "Europe", "Europe", "North America", "Unknown", "Europe", "North America","North America", "North America", "North America", "Europe","Unknown","North America", "North America", "Oceania","North America", "Europe", "Unknown", "North America", "North America", "Unknown", "North America", "South America", "Europe", "North America","North America Europe","Europe", "North America", "Europe", "Unknown","North America", "North America", "North America", "Africa", "North America", "Europe", "Europe", "North America", "Europe","Unknown", "North America", "North America", "Africa","North America","Europe","North America", "North America","Unknown","Unknown","Unknown", "North America", "North America","Unknown","Europe", "North America", "North America", "North America", "North America", "North America", "North America", "Asia","Oceania","North America","North America", "Europe","Europe", "North America", "Unknown", "Europe", "North America", "North America", "Europe", "Europe", "North America", "North America", "North America", "North America", "Europe", "Unknown", "Unknown", "Unknown","North America", "Unknown" )
+#write.csv(continent,"continent.csv")
 
 org.data.DF <- cbind(org.data.DF, continent)
 
+#Save data as a csv for visualisation later
 write.csv(org.data.DF, "fulldata.csv")
-
-
-p <- ggplot(newdata, aes(x=Repos, y=total_languages, size = public_members, color=continent)) + 
-  geom_point(alpha=0.3) +
-  scale_size(range = c(.1, 15), name="Public Members")+
-  theme_bw() +
-  theme(legend.position="right") +
-  ylab("Total Languages") +
-  xlab("Total Public Repositories")
-
-ggplotly(p)
 
 ############################ Try Some Hierarchical Clustering with the Data ##############
 
