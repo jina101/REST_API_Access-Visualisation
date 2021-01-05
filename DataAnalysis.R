@@ -8,7 +8,9 @@ library(dygraphs)
 library(xts)
 
 ######################################################################
-# Interactive Bubble Plot to Visualise Total Repos Vs Total Languages
+#  VISUALISATION 1:
+
+#Interactive Bubble Plot to Visualise Total Repos Vs Total Languages
 # of various users/organisations grouped by their continent and with
 # point size determined by the number of public members they have
 ######################################################################
@@ -32,6 +34,11 @@ bubble_plot <- ggplot(sorted_data, aes(x=Repos, y=total_languages, size = public
 
 #make it interactive
 ggplotly(bubble_plot)
+
+
+######################################################################
+#  My Own Github Account Analysis and Visualisation
+######################################################################
 
 
 # Read in Data from CSV file as data frames
@@ -65,32 +72,33 @@ for(i in 1: nrow(commit.DF))
 
 commit.DF <- cbind(commit.DF, repo_names)
 
-#####################################################
-#Visualisation: Total Commits By Month for Each Repo
-#####################################################
+####################################################################################
+#Visualisation 1: Animated Bar Plot: Total Commits Per Repo over Oct 2020 - Dec 2020
+####################################################################################
 
 head(commit.DF)
 summary.data.frame(commit.DF)
 
 
 #1: Group Data by Repository and Month
- commit.DF2 <- commit.DF %>%
+ commit_by_repo <- commit.DF %>%
   mutate(month = month(CommitDate)) %>%
   group_by(repo_names, month)
 
  #Get the totals for each group
- commit.DF3 <- as.data.frame(count(commit.DF2))
+ commit_by_repo.totals <- as.data.frame(count(commit_by_repo))
  
- #Exclude row 5:
- commit.DF3 <- commit.DF3[-5,]
+ #Exclude row 5 (Jan 2021 Data)
+ commit_by_repo.totals <- commit_by_repo.totals[-5,]
  
- #Plot
- ggplot(commit.DF3, aes(repo_names, n, fill=repo_names)) +
+ #Regular Bar Plot
+ ggplot(commit_by_repo.totals, aes(repo_names, n, fill=repo_names)) +
     geom_bar(stat='identity', width=0.5) +
     theme_bw()+
     theme(legend.title =element_text("Repositories"),
        axis.text.x=element_blank(),
        axis.ticks.x=element_blank())+
+   ggtitle("Total Commits Per Repository Oct 2020 - Dec 2020")+
     ylab("Total Commits") +
     xlab("Repositories")
  
@@ -102,7 +110,8 @@ summary.data.frame(commit.DF)
  
  monthly_data <- rbind(a,b,c,d)
  
-p<- ggplot(monthly_data, aes(x=Repository, y=Commits, fill=Repository)) + 
+ 
+animated_bar<- ggplot(monthly_data, aes(x=Repository, y=Commits, fill=Repository)) + 
     geom_bar(stat='identity') +
     theme_bw() +
    theme(axis.text.x=element_blank(),
@@ -117,10 +126,9 @@ p<- ggplot(monthly_data, aes(x=Repository, y=Commits, fill=Repository)) +
    shadow_mark(alpha = 0.3, size = 0.5)+
     ease_aes('sine-in-out')
 
-animate(p)
-anim_save("output.gif")
- 
- anim_save("CommitsPerRepo.gif")
+#Save the animated bar plot as a gif
+animate(animated_bar)
+anim_save("AnimatedBar-CommitsPerRepoOct2020-Nov2020.gif")
  
 ##################################################################
 # Most Popular Commit Times
