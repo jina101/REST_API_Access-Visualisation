@@ -70,9 +70,6 @@ paste(format(gg_commits$author$login), ":", gg_commits$commit$message)
 
 ######################## Visualisation ###############################################################################
 
-library(rlist)
-library(pipeR)
-
 #######################################################################################################################
 # Visualisation 1: Total Languages vs Total Repos for 100 GitHub Repos
 
@@ -251,8 +248,6 @@ org.data.DF <- cbind(org.data.DF, continent)
 
 write.csv(org.data.DF, "fulldata.csv")
 
-#newdata %>%
-#mutate(country = factor(Location, Location)) %>%
 
 p <- ggplot(newdata, aes(x=Repos, y=total_languages, size = public_members, color=continent)) + 
   geom_point(alpha=0.3) +
@@ -362,7 +357,7 @@ for(i in 1:length(repo_names))
 
 
 
-# Animated plot of total repos, total languages and total commits over a few months
+# Animated plot of total repos and total commits over a few months
 
 # Commits by Repository
 library("data.table")
