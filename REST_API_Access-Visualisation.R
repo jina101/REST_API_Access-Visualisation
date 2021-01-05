@@ -10,12 +10,15 @@ library(httpuv)
 #install.packages("httr")
 library(httr)
 
-#usethis::edit_r_environ()
 
+#########################################################################################
+#                      Access the API and Retrieve some Data 
+#########################################################################################
 
+#Our endpoint is github
 oauth_endpoints("github")
 
-# Change based on what you 
+# Name of App, key and secret 
 myapp <- oauth_app(appname = "REST_API_Visualisation",
                    key = "7471d2a0322c6e108c48",
                    secret = "f648b73c315cd4f65ec16f025effd568d9de45c0")
@@ -23,7 +26,7 @@ myapp <- oauth_app(appname = "REST_API_Visualisation",
 # Get OAuth credentials
 github_token <- oauth2.0_token(oauth_endpoints("github"), myapp)
 
-# Use API
+# Use API (accessing CSSEGISandData's Covid-19 Repo forks)
 gtoken <- config(token = github_token)
 req <- GET("https://api.github.com/repos/CSSEGISandData/COVID-19/forks", gtoken)
 
@@ -41,6 +44,8 @@ gitDF
 gitDF[gitDF$full_name == "CSSEGISandData/datasharing"] 
 str(gitDF$commits)
 
+#To the above for other repos and explore the data available
+
 ##CERN
 req2 <- GET("https://api.github.com/users/CERN/repos", gtoken)
 json1 = content(req2)
@@ -48,7 +53,6 @@ gitDFCERN = jsonlite::fromJSON(jsonlite::toJSON(json1))
 gitDFCERN[gitDFCERN$full_name == "CERN/datasharing"] 
 str(gitDFCERN)
 gitDFCERN[7]
-?GET
 
 ##sindresorhus
 req3 <- GET("https://api.github.com/users/sindresorhus/repos", gtoken)
@@ -57,6 +61,7 @@ gitDFsindresorhus = jsonlite::fromJSON(jsonlite::toJSON(json1))
 gitDFsindresorhus[gitDFsindresorhus$full_name == "sindresorhus/datasharing"] 
 gitDFsindresorhus[7]
 
+#hadley
 hadley_orgs <- fromJSON("https://api.github.com/users/hadley/orgs")
 hadley_repos <- fromJSON("https://api.github.com/users/hadley/repos")
 gg_commits <- fromJSON("https://api.github.com/repos/hadley/ggplot2/commits")
@@ -68,9 +73,9 @@ gg_issues <- fromJSON("https://api.github.com/repos/hadley/ggplot2/issues")
 paste(format(gg_issues$user$login), ":", gg_issues$title)
 paste(format(gg_commits$author$login), ":", gg_commits$commit$message)
 
-######################## Visualisation ###############################################################################
-
-#######################################################################################################################
+###############################################################################################
+#                          Retrieve Data for Visualisation Purposes               
+###############################################################################################
 # Visualisation 1: Total Languages vs Total Repos for 100 GitHub Repos
 
 # Get GitHub data for 100 Organisations

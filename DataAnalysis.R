@@ -7,6 +7,31 @@ library(gganimate)
 library(dygraphs)
 library(xts)
 
+######################################################################
+# Interactive Bubble Plot to Visualise Total Repos Vs Total Languages
+# of various users/organisations grouped by their continent and with
+# point size determined by the number of public members they have
+######################################################################
+
+#Read in the data
+org.data.DF <- read.csv("fulldata.csv")
+
+#Sort the data by the total number of repos
+sorted_data<- org.data.DF[order(org.data.DF[,2]),]
+
+
+#Create a bubble plot
+bubble_plot <- ggplot(sorted_data, aes(x=Repos, y=total_languages, size = public_members, color=continent)) + 
+  geom_point(alpha=0.3) +
+  scale_size(range = c(.1, 15), name="Public Members")+
+  theme_bw() +
+  theme(legend.position="right") +
+  ggtitle("Orgs/Users: Total Languages vs Total Repositories")+
+  ylab("Total Languages") +
+  xlab("Total Public Repositories")
+
+#make it interactive
+ggplotly(bubble_plot)
 
 
 # Read in Data from CSV file as data frames
