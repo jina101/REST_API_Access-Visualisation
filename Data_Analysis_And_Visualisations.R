@@ -194,15 +194,21 @@ anim_line_plot <- group_by_time %>%
 anim_save("AnimatedLinePlot-CommitsByTime.gif")
 
 
+################ Upload to Plotly #############
+
+Sys.setenv("plotly_username"="jina101")
+Sys.setenv("plotly_api_key"="crSKjKjndZ2gJMrtSP8Y")
+
+
+api_create(bubble_plot)
+api_create(animated_bar)
+api_create(dygraph1)
+api_create(anim_line_plot)
 
 
 
 
-
-
-
-
-###################################################
+############################################################
 q <- commit.DF %>% 
   count(week = floor_date(commit.DF$DateTime, "week")) %>% 
   ggplot(aes(week, n)) +
@@ -223,4 +229,6 @@ s <- commit.DF %>%
   geom_line()
 
 ggplotly(s)
+
+
  
